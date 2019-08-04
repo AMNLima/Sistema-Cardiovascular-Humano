@@ -150,7 +150,7 @@ t = 0:Ts:60;
 r_wave_times = find(max(zecg)*R_dtct) * Ts;
 
 % Função Elastança
-HR = 98;
+HR = 75;
 Emax = 2;
 Emin = 0.06;
 T = 60/HR;
@@ -190,9 +190,11 @@ V0 = 10;
 for i=1:length(t)-1
     Pve(i) = E(i)*(Vve(i)-V0); % Pressão no ventrículo esquerdo
     
-    [A, B] = changeDiodes(Pao(i), Pae(i), Pve(i), E(i), omega(i)/1000, Vve(i)); % Função diodo
+    [A, B, p] = changeDiodes(Pao(i), Pae(i), Pve(i), E(i)); % Função diodo
     
-    x = runkut4(Ts, x, A, B, E(i)); % Runge-Kuta 4 ordem
+    w = (omega(i)*2*pi/60)^2;
+    
+    x = runkut4(Ts, x, A, B, p, E(i), w); % Runge-Kuta 4 ordem
     
     Vve(i+1) = x(1);
     Pao(i+1) = x(2);
@@ -214,16 +216,17 @@ figure(1)
 % ylabel('Pressão (mmHg)')
 % xlabel('tempo (s)')
 % 
-% subplot(3, 1, 2);
-% plot(t, Qa, 'm')
-% grid on
-% ylabel('Fluxo (m/s)')
-% xlabel('tempo (s)')
-% title('Fluxo Aórtico')
 
-subplot(1, 1, 1);
+subplot(1, 2, 1);
+plot(t, omega/1000, 'm')
+grid on
+ylabel('Velocidade (krpm)')
+xlabel('tempo (s)')
+title('Velocidade da Bomba')
+
+subplot(1, 2, 2);
 plot(t, Qb, 'r')
 grid on
-ylabel('Volume (ml)')
+ylabel('Fluxo (ml/s)')
 xlabel('tempo (s)')
-title('Volume no ventrículo esquerdo')
+title('Fluxo na Bomba')

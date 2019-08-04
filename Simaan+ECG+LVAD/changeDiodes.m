@@ -1,4 +1,4 @@
-function [A, B] = changeDiodes(Pao, Pae, Pve, E, omega, Vve)
+function [A, B, p] = changeDiodes(Pao, Pae, Pve, E)
 
 if(Pae > Pve)
     Da = 0;
@@ -11,10 +11,10 @@ else
     Dm = 0;
 end
 
-if Vve > 1
+if Pve > 1
     Rk = 0;
 else
-    Rk = -3.5*(Vve-1);
+    Rk = -3.5*(Pve-1);
 end
 
 % Resistances
@@ -57,8 +57,15 @@ A = [ -((Dm/Rm) + (Da/Ra))*E      Da/Ra                     0           0       
 B = [   ((Dm/Rm) + (Da/Ra))*V0;
         (-Da*V0)/(Ra*Cao);
         0;
-        0;
+        0;  
         -(Dm*V0)/(Rm*Cae);
-        -((E*V0)/(Li + Lo + beta1)) - ((beta2*(omega*2*pi/60)^2)/(Li + Lo + beta1))];
+        -V0/(Li + Lo + beta1)];
+    
+p = [0;
+    0;
+    0;
+    0;
+    0;
+    -beta2/(Li + Lo + beta1)];
 end
 
