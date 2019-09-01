@@ -1,0 +1,122 @@
+function [A, B] = changeDiodes(Pao, Pae, Pve, E, Pc, alpha, Vve, Qo, Pex)
+
+if(Pae > Pve)
+    Da = 0;
+    Dm = 1;
+elseif Pve > Pao
+    Da = 1;
+    Dm = 0;
+else
+    Da = 0;
+    Dm = 0;
+end
+
+if Pve > 1
+    Rk = 0;
+else
+    Rk = -3.5*(Pve-1);
+end
+
+if(Pve > Pc)
+        Di = 1;
+        Do = 0.03;
+    elseif (Pc > Pao)
+        Di = 0.08;
+        Do = 1;
+    else
+        Di = 0.08;
+        Do = 0.03;
+end
+
+% Resistances
+Rs = 1; % Sistemic Vascular
+Rm = 0.0050; % Mitral Valve
+Ra = 0.0010; % Aortic Valve
+Rc = 0.0398; % Characteristic
+Ri = 0.0677; % Inlet Resistance of Cannulae
+Ro = 0.0677; % Outlet Resistance of Cannulae
+Rp = 0.05;
+Rd = 0.01;
+
+% Compliances
+Cr = 4.400; % Left atrial
+Cs = 1.330; % Systemic
+Ca = 0.080; % Aortic
+Cae = Cr;
+Cao = Ca;
+Cp = 2;
+Cd = 4;
+
+% Inertance
+Ls = 0.0005; % Inertance of blood in Aorta
+L = Ls;
+Li = 0.0127;
+Lo = 0.0127;
+Lp = 0.0033;
+
+% Pressure Difference Parameters
+% beta0 = 0.17070;
+% beta1 = 0.02177;
+% beta2 = -9.3e-5;
+betai = Di/(Li + Di * Lp);
+betao = Do/(Lo + Do * Lp);
+gamma = betai * Lp * betao;
+Ri_ = Ri + exp(-0.25*Vve);
+omegai = Ri_ / (Li + Di * Lp);
+omegao = Ro*(Qo) / (Lo + Do * Lp);
+V0 = 10; % Volume do ventrículo em ml
+Vd = 107;
+
+
+phi = (1-gamma*Lp);
+
+%x = [Pao Qa Vve Qo Ps Pae Qi Vc Pd];
+a00 = -Da/(Ra*Cao);
+a01 = -1/Cao;
+a02 = E*Da/(Ra*Cao);
+a03 = 1/Cao;
+a10 = 1/L;
+a11 = -Rc/L;
+a14 = -1/L;
+a20 = Da/Ra;
+a22 = -((Dm/Rm) + (Da/Ra))*E;
+a25 = Dm/Rm;
+a30 = -betao/phi;
+a33 = -(alpha* (betao - gamma) + (betao * Rp + omegao - gamma * Rp))/phi;
+a36 = (alpha * (betai - gamma) + (betai * Rp - gamma * Rp - betai * Lp * omegao))/phi;
+a37 = (betao - gamma) / (Cp*phi);
+a38 = (betao - gamma) / phi;
+a40 = -gamma/phi;
+a42 = betai*E/phi;
+a43 = (alpha * (betai - gamma) + (betai * Rp - gamma * Rp - betai * Lp * omegao))/phi;
+a44 = -(alpha*(betai - gamma) + (betai*Rp + omegai + gamma*Rp))/phi;
+a46 = -(alpha * (betai - gamma) + (betai * Rp + omegai + gamma * Rp))/phi;
+a47 = -(betai - gamma)/Cp*phi;
+a48 = -(betai - gamma)/phi;
+a68 = 1/(Rd*Cd);
+
+% x = [Vve, Pae, Qa, Pao, Ps, Qi, Qo, Pd, Vc]
+A = [-(Dm/R_m + Da/Ra) * E, Dm/Rm, 0, Da/Ra, 0, -1, 0, 0, 0;
+    (Dm * E)/(Rm * Cae), -1/(Cae) * (1/Rs + Dm/Rm), 0, 0, 1/(Rs * Cae), 0, 0, 0, 0;
+    0, 0, -Rc/Ls, 1/Ls, -1/Ls, 0, 0, 0, 0;
+    (Da * Et)/(Ra * Cao), 0, -1/Cao, -Da/(Ra * Cao), 0, 0, 1/Cao, 0, 0;
+    0, 1/(Rs * Cs), 1/Cs, 0, -1/(Rs * Cs), 0, 0, 0, 0;
+    betai * E / phi, 0, 0, - gamma / phi, 0, - (alpha * (betai - gamma) + (betai * Rp + omegai + gamma * Rp))/(phi), (alpha * (betai - gamma) + (betai * Rp - gamma * Rp - betai * Lp * omegao))/(phi), -(betai - gamma)/(phi), -(betai - gamma)/(Cp * (phi));
+    0, 0, 0, -betao / (phi), 0, (alpha * (betao - gamma) + (betao * Rp - betao * Lp * omegai - gamma * Rp))/(1 - gamma * Lp), -(alpha * (betao - gamma) + (betao * Rp + omegao - gamma * Rp))/(phi), (betao - gamma) / (1 - gamma * Lp), (betao - gamma)/(Cp * (phi));
+    0, 0, 0, 0, 0, 0, 0, -1/(Rd * Cd), 0;
+    0, 0, 0, 0, 0, 1, -1, 0, 0
+    ];
+
+% x = [Vve, Pae, Qa, Pao, Ps, Qi, Qo, Pd, Vc]
+B = [(Dm/Rm + Da/Ra)*E*V0;
+    -(Dm*E*V0)/(Rm*Cae);
+    0;
+    -(D_a*E_t*V_0)/(R_a*C_ao);
+    0;
+    ((beta_i - gamma)/C_p) * Vd_vad - beta_i * E_t * V_0;
+    ((beta_o - gamma)/C_p) * Vd_vad;
+    P_x / (R_d * C_d);
+    0
+     ];
+end
+
