@@ -234,5 +234,3 @@ grid on
 ylabel('ECG sintético')
 xlabel('tempo(s)')
 title('Sinal de ECG sintético com detecção de onde R (complexo QRS)')
-
-
