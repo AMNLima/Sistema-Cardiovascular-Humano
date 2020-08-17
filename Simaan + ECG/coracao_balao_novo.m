@@ -93,4 +93,11 @@ grid on
 ylabel('ECG sintético')
 xlabel('tempo(s)')
 
+%%
+figure(2)
+subplot(2,1,1)
+plot(t, zecg_P+zecg_QRS+zecg_T, 'r', t, zecg, 'b')
+subplot(2,1,2)
+plot(t, ((zecg_P+zecg_QRS+zecg_T)-zecg).^2)
+
 
